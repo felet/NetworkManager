@@ -11,7 +11,11 @@
 #endif
 
 #include "nm-setting.h"
-#include <linux/if_vlan.h>
+
+#if !defined(NETWORKMANAGER_COMPILATION) \
+    && (!defined(NM_NO_INCLUDE_EXTRA_HEADERS) || !NM_NO_INCLUDE_EXTRA_HEADERS)
+    #include <linux/if_vlan.h>
+#endif
 
 G_BEGIN_DECLS
 

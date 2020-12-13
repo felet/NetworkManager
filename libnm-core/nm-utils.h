@@ -12,11 +12,12 @@
 
 #include <glib.h>
 
-#include <netinet/in.h>
-
-/* For ETH_ALEN and INFINIBAND_ALEN */
-#include <linux/if_ether.h>
-#include <linux/if_infiniband.h>
+#if !defined(NETWORKMANAGER_COMPILATION) \
+    && (!defined(NM_NO_INCLUDE_EXTRA_HEADERS) || !NM_NO_INCLUDE_EXTRA_HEADERS)
+    #include <netinet/in.h>
+    #include <linux/if_ether.h>
+    #include <linux/if_infiniband.h>
+#endif
 
 #include "nm-core-enum-types.h"
 #include "nm-setting-sriov.h"
