@@ -621,7 +621,8 @@ nm_supplicant_config_add_bgscan(NMSupplicantConfig *self, NMConnection *connecti
         || ((s_wsec = nm_connection_get_setting_wireless_security(connection))
             && NM_IN_STRSET(nm_setting_wireless_security_get_key_mgmt(s_wsec),
                             "ieee8021x",
-                            "wpa-eap")))
+                            "wpa-eap",
+                            "wpa-eap-suite-b-192")))
         bgscan = "simple:30:-65:300";
 
     return nm_supplicant_config_add_option(self, "bgscan", bgscan, -1, FALSE, error);
@@ -863,6 +864,11 @@ nm_supplicant_config_add_setting_wireless_security(NMSupplicantConfig *         
     } else if (nm_streq(key_mgmt, "sae")) {
         if (_get_capability(priv, NM_SUPPL_CAP_TYPE_FT))
             g_string_append(key_mgmt_conf, " ft-sae");
+    } else if (nm_streq(key_mgmt, "wpa-eap-suite-b-192")) {
+        pmf = NM_SETTING_WIRELESS_SECURITY_PMF_REQUIRED;
+        if (!nm_supplicant_config_add_option(self, "pairwise", "GCMP-256", -1, NULL, error)
+            || !nm_supplicant_config_add_option(self, "group", "GCMP-256", -1, NULL, error))
+            return FALSE;
     }
 
     if (!add_string_val(self, key_mgmt_conf->str, "key_mgmt", TRUE, NULL, error))
@@ -932,7 +938,7 @@ nm_supplicant_config_add_setting_wireless_security(NMSupplicantConfig *         
     }
 
     /* Don't try to enable PMF on non-WPA/SAE/OWE networks */
-    if (!NM_IN_STRSET(key_mgmt, "wpa-eap", "wpa-psk", "sae", "owe"))
+    if (!NM_IN_STRSET(key_mgmt, "wpa-eap", "wpa-eap-suite-b-192", "wpa-psk", "sae", "owe"))
         pmf = NM_SETTING_WIRELESS_SECURITY_PMF_DISABLE;
 
     /* Check if we actually support PMF */
@@ -1050,7 +1056,7 @@ nm_supplicant_config_add_setting_wireless_security(NMSupplicantConfig *         
         }
     } else {
         /* 802.1x for Dynamic WEP and WPA-Enterprise */
-        if (NM_IN_STRSET(key_mgmt, "ieee8021x", "wpa-eap")) {
+        if (NM_IN_STRSET(key_mgmt, "ieee8021x", "wpa-eap", "wpa-eap-suite-b-192")) {
             if (!setting_8021x) {
                 g_set_error(error,
                             NM_SUPPLICANT_ERROR,
@@ -1068,7 +1074,7 @@ nm_supplicant_config_add_setting_wireless_security(NMSupplicantConfig *         
                 return FALSE;
         }
 
-        if (nm_streq(key_mgmt, "wpa-eap")) {
+        if (NM_IN_STRSET(key_mgmt, "wpa-eap", "wpa-eap-suite-b-192")) {
             /* When using WPA-Enterprise, we want to use Proactive Key Caching (also
              * called Opportunistic Key Caching) to avoid full EAP exchanges when
              * roaming between access points in the same mobility group.

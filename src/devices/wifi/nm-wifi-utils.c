@@ -407,7 +407,7 @@ verify_wpa_eap(NMSettingWirelessSecurity *s_wsec,
     auth_alg = nm_setting_wireless_security_get_auth_alg(s_wsec);
 
     if (key_mgmt) {
-        if (!strcmp(key_mgmt, "wpa-eap")) {
+        if (NM_IN_STRSET(key_mgmt, "wpa-eap", "wpa-eap-suite-b-192")) {
             if (!s_8021x) {
                 g_set_error_literal(error,
                                     NM_CONNECTION_ERROR,
