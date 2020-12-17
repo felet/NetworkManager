@@ -7540,6 +7540,13 @@ unmanaged_on_quit(NMDevice *self)
         }
     }
 
+    /* The check on nm_device_can_assume_connections() above already reports
+     * all OVS connection types as unamanaged-on-quit. However, it doesn't
+     * catch OVS system interfaces which should be equally disconnected on
+     * quit. XXX */
+    //if (nm_device_get_applied_setting(self, NM_TYPE_SETTING_OVS_INTERFACE))
+    //    return TRUE;
+
     return FALSE;
 }
 
